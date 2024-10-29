@@ -1,89 +1,128 @@
-프로젝트 구조 및 설명:
+korea_investment/
+├── .env # 환경 설정 파일
+├── token.json # 토큰 저장용 파일 (자동 생성)
+├── main.py # 메인 실행 파일
+│
+├── config/
+│ ├── **init**.py
+│ └── settings.py # 설정값 로드
+│
+├── models/
+│ ├── **init**.py
+│ └── token.py # 토큰 데이터 모델
+│
+├── utils/
+│ ├── **init**.py
+│ ├── auth.py # 토큰 관리 클래스
+│ └── api_client.py # 웹소켓 클라이언트
+│
+├── analysis/
+│ ├── **init**.py
+│ └── technical.py # 기술적 분석 클래스 (StockAnalyzer)
+│
+└── strategy/
+├── **init**.py
+└── stock_selector.py # 종목 선정 클래스 (TopStockSelector)
 
-파일 구조
+현재 구현된 주요 기능:
 
-Copykorea_investment/
-├── .env                 # 환경변수 설정 파일
-├── kis_client.py       # 토큰 관리 클라이언트
-├── kis_websocket.py    # 웹소켓 연결 및 실시간 데이터 처리
-├── main.py            # 메인 실행 파일
-└── token_cache.json   # 토큰 캐시 파일 (자동 생성)
+1. config/: 환경 설정 관리
+2. models/: 토큰 데이터 구조
+3. utils/: 웹소켓 연결 및 인증
+4. analysis/: 종목 분석 로직
+5. strategy/: 종목 선정 로직
 
-주요 컴포넌트 역할
+///////2024.10.29
 
-a) kis_client.py:
+### 1. 현재까지 구현된 기능
 
-토큰 관리 및 인증 처리
-access_token과 approval_key 발급
-토큰 캐싱 및 재사용
+A. 기본 인프라
 
-b) kis_websocket.py:
+- 환경 설정 (.env) 기반 설정 관리
+- 웹소켓 연결 및 토큰 관리
+- 모의투자/실전투자 분기 처리
 
-웹소켓 연결 관리
-실시간 데이터 구독
-데이터 스트리밍 처리
+B. 웹소켓 클라이언트 (utils/api_client.py)
 
-c) main.py:
+- 자동 재연결
+- 실시간 데이터 구독
+- PINGPONG 처리
+- 에러 핸들링
 
-프로그램 실행 진입점
-단일 종목 모니터링 설정
-데이터 처리 콜백 구현
+C. 토큰 관리 (utils/auth.py, models/token.py)
 
+- 토큰 로컬 저장/로드
+- 4시간 만료 체크
+- 자동 갱신
 
-설정 파일
+D. 분석 로직 (analysis/technical.py)
 
-a) .env 파일 구성:
-CopyAPP_KEY=your_app_key
-APP_SECRET=your_app_secret
-IS_PROD=False
-ACCOUNT_NUMBER=your_account
-ACCOUNT_CODE=01
+- 추세 분석 (이동평균선)
+- 거래량 분석
+- 외국인/기관 수급 분석
+- 박스권 돌파 분석
+- 캔들패턴 분석
 
-현재 구현된 기능:
+E. 종목 선정 전략 (strategy/stock_selector.py)
 
+- 종합 점수 계산
+- TOP 10 종목 선정 로직
 
-REST API 토큰 인증
-WebSocket 연결 및 인증
-실시간 주식 호가 데이터 구독
-자동 재연결 처리
-에러 처리
+### 2. 테스트 완료된 부분
 
+- 웹소켓 연결
+- 토큰 관리
+- 실시간 데이터 구독 설정
 
-사용된 API:
+### 3. 다음 구현 필요 사항
 
+A. 데이터 수집/저장
 
-웹소켓 접속키 발급 (/oauth2/Approval)
-실시간 주식호가 (H0STASP0)
+- 실시간 데이터를 DB나 파일로 저장
+- 일봉/분봉 데이터 수집
+- 외국인/기관 수급 데이터 수집
 
+B. 분석 기능 연동
 
-실행 방법:
+- 실시간 데이터와 분석 로직 연결
+- 정기적인 분석 수행
+- 결과 저장 및 업데이트
 
-bashCopy# 1. 필요 패키지 설치
-pip install websockets python-dotenv requests
+C. 알림/모니터링
 
-# 2. 실행
-python main.py
+- 조건 충족시 알림
+- 성능 모니터링
+- 에러 로깅
 
-다음 구현 예정 사항:
+### 4. 코드 수정 필요 사항
 
+- analysis/technical.py의 실제 데이터 연동 테스트
+- TopStockSelector의 실시간 처리 최적화
+- 메모리 관리 및 성능 최적화
 
-실시간 데이터 파싱 및 처리
-매매 로직 구현
-거래량 분석
-차트 데이터 처리
-자동 매매 기능
+### 5. 테스트 필요 사항
 
-주의사항:
+- 장 시간 중 실시간 데이터 수신 테스트
+- 분석 로직 정확도 검증
+- 메모리 누수 체크
+- 장시간 운영 안정성 테스트
 
-.env 파일의 중요 정보 보호
-실전/모의투자 환경 구분 주의
-토큰 만료 시간 관리
+### 6. 다음 작업 시작점
 
-다음 단계에서는:
+```python
+# main.py에 데이터 저장 로직 추가 필요
+async def save_market_data(message):
+    # 데이터 파싱 및 저장
+    pass
 
-실시간 데이터 파싱 및 저장
-매매 전략 구현
-거래량 분석 로직
-을 구현할 예정입니다.
+# analysis/technical.py와 실제 데이터 연동
+async def run_analysis():
+    # 저장된 데이터 로드 및 분석
+    pass
 
-이어서 진행하실 때 어떤 부분부터 구현하기를 원하시는지 말씀해 주시면 됩니다.
+# 다음 실행시 시작 지점
+if __name__ == "__main__":
+    initialize_database()  # 추가 필요
+    start_data_collection()  # 추가 필요
+    run_analysis_scheduler()  # 추가 필요
+```
