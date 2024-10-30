@@ -126,3 +126,6 @@ if __name__ == "__main__":
     start_data_collection()  # 추가 필요
     run_analysis_scheduler()  # 추가 필요
 ```
+
+키웅증권 모의투자 계좌
+80895656
